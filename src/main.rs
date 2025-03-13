@@ -10,18 +10,25 @@ async fn main() {
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
     let v: Value = serde_json::from_str(&data).unwrap();
-    let mod_jar = Some(v["target_path"].as_str());
-    let mod_id = match get_id(mod_jar.unwrap().unwrap()) {
+    let jar_path = Some(v["target_path"].as_str());
+    
+    let fabricmod_id = match get_id(jar_path.unwrap().unwrap()) {
         Some(id) => id,
         None => panic!("No ID found"),
     };
     
     let client = reqwest::Client::new();
-    let body = client.get("https://api.modrinth.com/v2/search").query(&[("query", mod_id)]).send().await.unwrap().text().await.unwrap();
+    let search_result = client.get("https://api.modrinth.com/v2/search").query(&[("query", fabricmod_id)]).send().await.unwrap().text().await.unwrap();
 
-    let v: Value = serde_json::from_str(&body).unwrap();
+    let v: Value = serde_json::from_str(&search_result).unwrap();
+    
+    let project_result = client.get(format!("https://api.modrinth.com/v2/project/{}", v["hits"][0]["project_id"].as_str().unwrap())).send().await.unwrap().text().await.unwrap();
 
-    println!("{}", v["hits"][0]["project_id"]);
+    let v: Value = serde_json::from_str(&project_result).unwrap();
+    
+    let version_id_array = v["versions"].as_array().unwrap();
+    
+    println!("{}", version_id_array[version_id_array.len() -1]);
 }
 
 fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
