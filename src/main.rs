@@ -21,14 +21,18 @@ async fn main() {
     let search_result = client.get("https://api.modrinth.com/v2/search").query(&[("query", fabricmod_id)]).send().await.unwrap().text().await.unwrap();
 
     let v: Value = serde_json::from_str(&search_result).unwrap();
-    
+
     let project_result = client.get(format!("https://api.modrinth.com/v2/project/{}", v["hits"][0]["project_id"].as_str().unwrap())).send().await.unwrap().text().await.unwrap();
 
     let v: Value = serde_json::from_str(&project_result).unwrap();
     
     let version_id_array = v["versions"].as_array().unwrap();
+
+    let version_results = client.get(format!("https://api.modrinth.com/v2/version/{}", version_id_array[version_id_array.len() - 1].as_str().unwrap())).send().await.unwrap().text().await.unwrap();
+
+    let v: Value = serde_json::from_str(&version_results).unwrap();
     
-    println!("{}", version_id_array[version_id_array.len() -1]);
+    println!("{}", v["files"][0]["url"]);
 }
 
 fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
