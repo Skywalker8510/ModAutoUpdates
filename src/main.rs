@@ -9,6 +9,7 @@ async fn main() {
     let mut file = File::open("./src/default.json").unwrap();
     let mut data = String::new();
     file.read_to_string(&mut data).unwrap();
+    
     let v: Value = serde_json::from_str(&data).unwrap();
     let jar_path = Some(v["target_path"].as_str());
     
@@ -32,7 +33,7 @@ async fn main() {
 
     let v: Value = serde_json::from_str(&version_results).unwrap();
     
-    println!("{}", v["files"][0]["url"]);
+    println!("{}", v["files"][0]["url"].as_str().unwrap());
 }
 
 fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
