@@ -11,9 +11,9 @@ async fn main() {
     file.read_to_string(&mut data).unwrap();
     
     let v: Value = serde_json::from_str(&data).unwrap();
-    let folder_path = Some(v["target_path"].as_str());
+    let folder_path = v["target_path"].as_str();
     
-    for file in read_dir(folder_path.unwrap().unwrap()).unwrap() {
+    for file in read_dir(folder_path.unwrap()).unwrap() {
         let jar_path = file.unwrap().path();
         let fabricmod_id = match get_id(jar_path) {
             Some(id) => id,
