@@ -1,6 +1,8 @@
 use std::fs::{read_dir, File};
+use std::io;
 use std::io::Read;
 use std::path::Path;
+use reqwest::get;
 use serde_json::Value;
 
 #[tokio::main]
@@ -36,6 +38,11 @@ async fn main() {
         let v: Value = serde_json::from_str(&version_results).unwrap();
 
         println!("{}", v["files"][0]["url"].as_str().unwrap());
+
+        let resp = get(v["files"][0]["url"].as_str().unwrap()).await.unwrap();
+        let mut out = File::create(format!("./{}/{}",folder_path.unwrap(), v["files"][0]["filename"].as_str().unwrap())).unwrap();
+        let body = resp.text().await.expect("body invalid");
+        io::copy(&mut body.as_bytes(), &mut out).expect("failed to copy content");
     }
 }
 
