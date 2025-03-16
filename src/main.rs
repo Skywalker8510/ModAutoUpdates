@@ -1,5 +1,5 @@
 use std::fs::{read_dir, File};
-use std::io;
+use std::{fs, io};
 use std::io::Read;
 use std::path::Path;
 use reqwest::get;
@@ -17,7 +17,7 @@ async fn main() {
     
     for file in read_dir(folder_path.unwrap()).unwrap() {
         let jar_path = file.unwrap().path();
-        let fabricmod_id = match get_id(jar_path) {
+        let fabricmod_id = match get_id(jar_path.clone()) {
             Some(id) => id,
             None => panic!("No ID found"),
         };
@@ -43,6 +43,7 @@ async fn main() {
         let mut out = File::create(format!("./{}/{}",folder_path.unwrap(), v["files"][0]["filename"].as_str().unwrap())).unwrap();
         let body = resp.text().await.expect("body invalid");
         io::copy(&mut body.as_bytes(), &mut out).expect("failed to copy content");
+        fs::remove_file(jar_path).unwrap();
     }
 }
 
