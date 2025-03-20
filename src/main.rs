@@ -39,7 +39,7 @@ async fn main() {
 
         println!("{}", v["files"][0]["url"].as_str().unwrap());
         
-        download_and_replace(folder_path, get(v["files"][0]["url"].as_str().unwrap()).await.unwrap(), v, jar_path);
+        download_and_replace(folder_path, get(v["files"][0]["url"].as_str().unwrap()).await.unwrap(), v, jar_path).await;
     }
 }
 
@@ -50,18 +50,13 @@ fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
     
     let mut final_string = None;
 
-    for i in 0..archive.len() {
-        let mut file = archive.by_index(i).unwrap();
-        if file.name() != "fabric.mod.json" {
-            continue;
-        }
-        let mut fabric_json_content = String::new();
-        file.read_to_string(&mut fabric_json_content).unwrap();
+    let fabricmodjson_index = archive.index_for_name("fabric.mod.json");
+    let mut file = archive.by_index(fabricmodjson_index?).unwrap();
+    let mut fabric_json_content = String::new();
+    file.read_to_string(&mut fabric_json_content).unwrap();
+    let v: Value = serde_json::from_str(&fabric_json_content).unwrap();
 
-        let v: Value = serde_json::from_str(&fabric_json_content).unwrap();
-        
-        final_string = Some(v["id"].to_string());
-    }
+    final_string = Some(v["id"].to_string());
     final_string
 }
 
