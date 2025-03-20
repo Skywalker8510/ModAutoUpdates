@@ -2,7 +2,7 @@ use std::fs::{read_dir, File};
 use std::{fs, io};
 use std::io::Read;
 use std::path::{Path, PathBuf};
-use reqwest::{get, Response, Url};
+use reqwest::{get, Response};
 use serde_json::Value;
 
 #[tokio::main]
@@ -45,18 +45,15 @@ async fn main() {
 
 fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
     let file = File::open(path).unwrap();
-
     let mut archive = zip::ZipArchive::new(file).unwrap();
-    
-    let mut final_string = None;
-
     let fabricmodjson_index = archive.index_for_name("fabric.mod.json");
     let mut file = archive.by_index(fabricmodjson_index?).unwrap();
     let mut fabric_json_content = String::new();
     file.read_to_string(&mut fabric_json_content).unwrap();
+    
     let v: Value = serde_json::from_str(&fabric_json_content).unwrap();
-
-    final_string = Some(v["id"].to_string());
+    let final_string = Option::from(v["id"].to_string());
+    
     final_string
 }
 
