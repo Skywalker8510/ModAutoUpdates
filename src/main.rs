@@ -36,8 +36,6 @@ async fn main() {
         let version_results = client.get(format!("https://api.modrinth.com/v2/version/{}", version_id_array[version_id_array.len() - 1].as_str().unwrap())).send().await.unwrap().text().await.unwrap();
 
         let v: Value = serde_json::from_str(&version_results).unwrap();
-
-        println!("{}", v["files"][0]["url"].as_str().unwrap());
         
         download_and_replace(folder_path, get(v["files"][0]["url"].as_str().unwrap()).await.unwrap(), v, jar_path).await;
     }
