@@ -16,10 +16,7 @@ async fn main() {
 
     for file in read_dir(folder_path.unwrap()).unwrap() {
         let jar_path = file.unwrap().path();
-        let fabricmod_id = match get_id(jar_path.clone()) {
-            Some(id) => id,
-            None => panic!("No ID found"),
-        };
+        let fabricmod_id = get_id(jar_path.clone()).expect("No Id Found");
 
         let client = reqwest::Client::new();
         let search_result = client
