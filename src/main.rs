@@ -12,9 +12,9 @@ async fn main() {
     file.read_to_string(&mut data).unwrap();
 
     let v: Value = serde_json::from_str(&data).unwrap();
-    let folder_path = v["target_path"].as_str();
+    let folder_path = v["target_path"].as_str().unwrap();
 
-    for file in read_dir(folder_path.unwrap()).unwrap() {
+    for file in read_dir(folder_path).unwrap() {
         let jar_path = file.unwrap().path();
         let fabricmod_id = get_id(jar_path.clone()).expect("No Id Found");
 
@@ -87,14 +87,14 @@ fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
 }
 
 async fn download_and_replace(
-    folder_path: Option<&str>,
+    folder_path: &str,
     url: Response,
     v: Value,
     jar_path: PathBuf,
 ) {
     let mut out = File::create(format!(
         "./{}/{}",
-        folder_path.unwrap(),
+        folder_path,
         v["files"][0]["filename"].as_str().unwrap()
     ))
     .unwrap();
