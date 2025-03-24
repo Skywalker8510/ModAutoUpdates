@@ -62,9 +62,13 @@ async fn main() {
             .unwrap();
 
         let v: Value = serde_json::from_str(&version_results).unwrap();
-        
+
         let url = v["files"][0]["url"].as_str().unwrap();
-        let download_path = format!("./{}{}", folder_path, v["files"][0]["filename"].as_str().unwrap());
+        let download_path = format!(
+            "./{}{}",
+            folder_path,
+            v["files"][0]["filename"].as_str().unwrap()
+        );
 
         download_files(url, &download_path).await.unwrap();
     }
