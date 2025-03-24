@@ -1,9 +1,9 @@
-use reqwest::{Response, get};
+use futures_util::StreamExt;
+use reqwest::get;
 use serde_json::Value;
 use std::fs::{File, read_dir};
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::{fs, io};
+use std::io::{Read, Write};
+use std::path::Path;
 
 #[tokio::main]
 async fn main() {
@@ -62,16 +62,11 @@ async fn main() {
             .unwrap();
 
         let v: Value = serde_json::from_str(&version_results).unwrap();
+        
+        let url = v["files"][0]["url"].as_str().unwrap();
+        let download_path = format!("./{}{}", folder_path, v["files"][0]["filename"].as_str().unwrap());
 
-        println!("{}", v["files"][0]["url"].as_str().unwrap());
-
-        download_and_replace(
-            folder_path,
-            get(v["files"][0]["url"].as_str().unwrap()).await.unwrap(),
-            v,
-            jar_path,
-        )
-        .await;
+        download_files(url, &download_path).await.unwrap();
     }
 }
 
@@ -86,19 +81,15 @@ fn get_id<P: AsRef<Path>>(path: P) -> Option<String> {
     Some(v["id"].to_string())
 }
 
-async fn download_and_replace(
-    folder_path: &str,
-    url: Response,
-    v: Value,
-    jar_path: PathBuf,
-) {
-    let mut out = File::create(format!(
-        "./{}/{}",
-        folder_path,
-        v["files"][0]["filename"].as_str().unwrap()
-    ))
-    .unwrap();
-    let body = url.text().await.expect("body invalid");
-    io::copy(&mut body.as_bytes(), &mut out).expect("failed to copy content");
-    fs::remove_file(jar_path).unwrap();
+async fn download_files(url: &str, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut file = File::create(path)?;
+    let mut stream = get(url).await?.bytes_stream();
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result?;
+        file.write_all(&chunk)?;
+    }
+
+    file.flush()?;
+    Ok(())
 }
