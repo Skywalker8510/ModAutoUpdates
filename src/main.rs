@@ -86,7 +86,7 @@ async fn get_api_search_result(
                 "facets",
                 format!(
                     "[[\"categories:{}\"],[\"versions:{}\"]]",
-                    config["mod_loader"], config["server_version"]
+                    config["loader_version"], config["server_version"]
                 ),
             ),
         ])
