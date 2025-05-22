@@ -1,12 +1,12 @@
 mod api_calls;
 
+use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
 use futures_util::StreamExt;
 use reqwest::{Client, get};
-use serde_json::{to_vec, Value};
+use serde_json::Value;
 use std::fs::{File, read_dir};
 use std::io::{Read, Write};
 use std::path::Path;
-use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
 
 #[tokio::main]
 async fn main() {
