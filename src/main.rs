@@ -22,18 +22,17 @@ async fn main() {
         let fabricmod_id = get_fabric_id(jar_path.clone()).expect("No Id Found");
 
         let client = Client::new();
-        
+
         let project_id =
             match get_api_search_result(client.clone(), fabricmod_id, config.clone()).await {
                 Ok(search_result) => search_result["hits"][0]["project_id"].to_string(),
                 Err(_) => continue,
             };
-        
-        let api_project_result =
-            match get_api_project_result(client.clone(), project_id).await {
-                Ok(project_result) => project_result,
-                Err(_) => continue,
-            };
+
+        let api_project_result = match get_api_project_result(client.clone(), project_id).await {
+            Ok(project_result) => project_result,
+            Err(_) => continue,
+        };
         let api_version_result = match get_api_version_result(client, api_project_result).await {
             Ok(api_version_result) => api_version_result,
             Err(_) => continue,
@@ -79,9 +78,24 @@ async fn get_api_search_result(
     fabricmod_id: String,
     config: Value,
 ) -> Result<Value, Box<dyn std::error::Error>> {
-    let search_result = client.get("https://api.modrinth.com/v2/search").query(&[("query", fabricmod_id), ("facets", format!("[[\"categories:{}\"],[\"versions:{}\"]]", config["mod_loader"], config["server_version"]),), ]).send().await?.text().await?;
+    let search_result = client
+        .get("https://api.modrinth.com/v2/search")
+        .query(&[
+            ("query", fabricmod_id),
+            (
+                "facets",
+                format!(
+                    "[[\"categories:{}\"],[\"versions:{}\"]]",
+                    config["mod_loader"], config["server_version"]
+                ),
+            ),
+        ])
+        .send()
+        .await?
+        .text()
+        .await?;
     let api_search_results: Value = serde_json::from_str(&search_result)?;
-    
+
     Ok(api_search_results)
 }
 
@@ -99,7 +113,7 @@ async fn get_api_project_result(
         .text()
         .await?;
     let api_project_results: Value = serde_json::from_str(&project_search)?;
-    
+
     Ok(api_project_results)
 }
 
@@ -108,8 +122,18 @@ async fn get_api_version_result(
     api_project_results: Value,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let version_id_array = api_project_results["versions"].as_array().unwrap();
-    let version_search = client.get(format!("https://api.modrinth.com/v2/version/{}", version_id_array[version_id_array.len() - 1].as_str().unwrap())).send().await?.text().await?;
+    let version_search = client
+        .get(format!(
+            "https://api.modrinth.com/v2/version/{}",
+            version_id_array[version_id_array.len() - 1]
+                .as_str()
+                .unwrap()
+        ))
+        .send()
+        .await?
+        .text()
+        .await?;
     let api_version_results: Value = serde_json::from_str(&version_search)?;
-    
+
     Ok(api_version_results)
 }
