@@ -53,7 +53,8 @@ async fn main() {
 
         let mut api_version_result_option = None;
         for result in version_id_array {
-            api_version_result_option = match get_api_version_result(client.clone(), &result).await {
+            api_version_result_option = match get_api_version_result(client.clone(), &result).await
+            {
                 Ok(version_result) => {
                     if is_compatible(
                         config["loader_version"].clone(),
