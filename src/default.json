@@ -1,3 +1,5 @@
 {
-    "target_path": "path/to/jar.jar"
+    "target_path": "path/to/jar.jar",
+    "server_version": "1.21.1",
+    "mod_loader": "fabric"
 }
