@@ -25,17 +25,56 @@ async fn main() {
 
         let project_id =
             match get_api_search_result(client.clone(), fabricmod_id, config.clone()).await {
-                Ok(search_result) => search_result["hits"][0]["project_id"].to_string(),
+                Ok(search_result) => {
+                    if is_compatible(
+                        config["loader_version"].clone(),
+                        config["server_version"].clone(),
+                        search_result["game_versions"].as_array().unwrap(),
+                        search_result["loaders"].as_array().unwrap(),
+                    ) {
+                        search_result["hits"][0]["project_id"].to_string()
+                    } else {
+                        continue; //ToDo add information to console log
+                    }
+                }
                 Err(_) => continue,
             };
 
-        let api_project_result = match get_api_project_result(client.clone(), project_id).await {
-            Ok(project_result) => project_result,
+        let version_id_array = match get_api_project_result(client.clone(), project_id).await {
+            Ok(project_result) => match project_result["versions"].as_array() {
+                Some(versions) => versions.clone(),
+                None => continue,
+            },
             Err(_) => continue,
         };
-        let api_version_result = match get_api_version_result(client, api_project_result).await {
-            Ok(api_version_result) => api_version_result,
-            Err(_) => continue,
+
+        let mut api_version_result_option = None;
+        for result in version_id_array {
+            api_version_result_option = match get_api_version_result(client.clone(), &result).await {
+                Ok(version_result) => {
+                    if is_compatible(
+                        config["loader_version"].clone(),
+                        config["server_version"].clone(),
+                        version_result["game_versions"].as_array().unwrap(),
+                        version_result["loaders"].as_array().unwrap(),
+                    ) {
+                        Option::from(version_result)
+                    } else {
+                        continue;
+                    }
+                }
+                Err(_) => continue,
+            };
+            break;
+        }
+
+        if api_version_result_option.is_none() {
+            continue;
+        }
+
+        let api_version_result = match api_version_result_option {
+            Some(version_result) => version_result,
+            None => continue,
         };
 
         let download_url = api_version_result["files"][0]["url"].as_str().unwrap();
@@ -47,6 +86,15 @@ async fn main() {
 
         download_files(download_url, &download_path).await.unwrap();
     }
+}
+
+fn is_compatible(
+    loader_version: Value,
+    server_version: Value,
+    game_version_array: &[Value],
+    loader_version_array: &[Value],
+) -> bool {
+    loader_version_array.contains(&loader_version) && game_version_array.contains(&server_version)
 }
 
 fn get_fabric_id<P: AsRef<Path>>(path: P) -> Option<String> {
@@ -119,15 +167,12 @@ async fn get_api_project_result(
 
 async fn get_api_version_result(
     client: Client,
-    api_project_results: Value,
+    version_id: &Value,
 ) -> Result<Value, Box<dyn std::error::Error>> {
-    let version_id_array = api_project_results["versions"].as_array().unwrap();
     let version_search = client
         .get(format!(
             "https://api.modrinth.com/v2/version/{}",
-            version_id_array[version_id_array.len() - 1]
-                .as_str()
-                .unwrap()
+            version_id
         ))
         .send()
         .await?
