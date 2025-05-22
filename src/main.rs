@@ -1,6 +1,6 @@
 use futures_util::StreamExt;
 use reqwest::{Client, get};
-use serde_json::Value;
+use serde_json::{to_vec, Value};
 use std::fs::{File, read_dir};
 use std::io::{Read, Write};
 use std::path::Path;
@@ -42,7 +42,7 @@ async fn main() {
 
         let version_id_array = match get_api_project_result(client.clone(), project_id).await {
             Ok(project_result) => match project_result["versions"].as_array() {
-                Some(versions) => versions.clone(),
+                Some(versions) => versions.to_vec(),
                 None => continue,
             },
             Err(_) => continue,
