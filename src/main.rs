@@ -18,18 +18,22 @@ async fn main() {
 
     let config: Value = serde_json::from_str(&data).unwrap();
     let folder_path = config["target_path"].as_str().unwrap();
+    let folder = read_dir(folder_path).unwrap();
     //**********************************************************************
 
-    for file in read_dir(folder_path).unwrap() {
+    for file in folder {
         let jar_path = file.unwrap().path();
-        let fabricmod_id = get_fabric_id(jar_path.clone()).expect("No Id Found");
+        let fabricmod_id = match get_fabric_id(jar_path.clone()) {
+            Ok(id) => id,
+            Err(_) => continue,
+        };
 
         let client = Client::new();
 
         let project_id =
             match get_api_search_result(client.clone(), fabricmod_id, config.clone()).await {
                 Ok(search_result) => {
-                    if is_compatible(
+                    if is_compatable(
                         config["loader_version"].clone(),
                         config["server_version"].clone(),
                         search_result["game_versions"].as_array().unwrap(),
@@ -56,7 +60,7 @@ async fn main() {
             api_version_result_option = match get_api_version_result(client.clone(), &result).await
             {
                 Ok(version_result) => {
-                    if is_compatible(
+                    if is_compatable(
                         config["loader_version"].clone(),
                         config["server_version"].clone(),
                         version_result["game_versions"].as_array().unwrap(),
@@ -77,18 +81,30 @@ async fn main() {
             None => continue,
         };
 
-        let download_url = api_version_result["files"][0]["url"].as_str().unwrap();
+        let download_url = match api_version_result["files"][0]["url"].as_str() {
+            Some(url) => url,
+            None => continue
+        };
+
+        let filename = match api_version_result["files"][0]["filename"].as_str() {
+            Some(filename) => filename,
+            None => continue
+        };
+
         let download_path = format!(
             "./{}{}",
             folder_path,
-            api_version_result["files"][0]["filename"].as_str().unwrap()
+            filename
         );
 
-        download_files(download_url, &download_path).await.unwrap();
+        match download_files(download_url, &download_path).await {
+            Ok(_) => println!("file downloaded successfully!"),
+            Err(_) => continue,
+        };
     }
 }
 
-fn is_compatible(
+fn is_compatable(
     loader_version: Value,
     server_version: Value,
     game_version_array: &[Value],
@@ -97,15 +113,13 @@ fn is_compatible(
     loader_version_array.contains(&loader_version) && game_version_array.contains(&server_version)
 }
 
-fn get_fabric_id<P: AsRef<Path>>(path: P) -> Option<String> {
-    let file = File::open(path).unwrap();
+fn get_fabric_id<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
+    let file = File::open(path)?;
+    let mut jar = zip::ZipArchive::new(file)?;
+    let file = jar.by_name("fabric.mod.json")?;
+    let fabricmod_json: Value = serde_json::from_reader(file)?;
 
-    let mut jar = zip::ZipArchive::new(file).unwrap();
-
-    let file = jar.by_name("fabric.mod.json").ok()?;
-    let fabricmod_json: Value = serde_json::from_reader(file).unwrap();
-
-    Some(fabricmod_json["id"].to_string())
+    Ok(fabricmod_json["id"].to_string())
 }
 
 async fn download_files(url: &str, path: &str) -> Result<(), Box<dyn std::error::Error>> {
