@@ -72,10 +72,6 @@ async fn main() {
             break;
         }
 
-        if api_version_result_option.is_none() {
-            continue;
-        }
-
         let api_version_result = match api_version_result_option {
             Some(version_result) => version_result,
             None => continue,
