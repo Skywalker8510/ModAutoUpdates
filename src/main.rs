@@ -83,19 +83,15 @@ async fn main() {
 
         let download_url = match api_version_result["files"][0]["url"].as_str() {
             Some(url) => url,
-            None => continue
+            None => continue,
         };
 
         let filename = match api_version_result["files"][0]["filename"].as_str() {
             Some(filename) => filename,
-            None => continue
+            None => continue,
         };
 
-        let download_path = format!(
-            "./{}{}",
-            folder_path,
-            filename
-        );
+        let download_path = format!("./{}{}", folder_path, filename);
 
         match download_files(download_url, &download_path).await {
             Ok(_) => println!("file downloaded successfully!"),
