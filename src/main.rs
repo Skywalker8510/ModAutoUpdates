@@ -36,8 +36,8 @@ async fn main() {
                     if is_compatable(
                         config["loader_version"].clone(),
                         config["server_version"].clone(),
-                        search_result["game_versions"].as_array().unwrap(),
-                        search_result["loaders"].as_array().unwrap(),
+                        search_result["hits"][0]["versions"].as_array().unwrap(),
+                        None,
                     ) {
                         search_result["hits"][0]["project_id"].to_string()
                     } else {
@@ -64,7 +64,7 @@ async fn main() {
                         config["loader_version"].clone(),
                         config["server_version"].clone(),
                         version_result["game_versions"].as_array().unwrap(),
-                        version_result["loaders"].as_array().unwrap(),
+                        Some(version_result["loaders"].as_array().unwrap()),
                     ) {
                         Option::from(version_result)
                     } else {
@@ -104,9 +104,12 @@ fn is_compatable(
     loader_version: Value,
     server_version: Value,
     game_version_array: &[Value],
-    loader_version_array: &[Value],
+    loader_version_array: Option<&[Value]>,
 ) -> bool {
-    loader_version_array.contains(&loader_version) && game_version_array.contains(&server_version)
+    match loader_version_array {
+        Some(loader_version_array) => loader_version_array.contains(&loader_version) && game_version_array.contains(&server_version),
+        None => game_version_array.contains(&server_version),
+    }
 }
 
 fn get_fabric_id<P: AsRef<Path>>(path: P) -> Result<String, Box<dyn std::error::Error>> {
