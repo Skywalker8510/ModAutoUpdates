@@ -39,7 +39,7 @@ async fn main() {
                         search_result["hits"][0]["versions"].as_array().unwrap(),
                         None,
                     ) {
-                        search_result["hits"][0]["project_id"].to_string()
+                        search_result["hits"][0]["project_id"].as_str().unwrap().to_string()
                     } else {
                         continue; //ToDo add information to console log
                     }
@@ -47,7 +47,7 @@ async fn main() {
                 Err(_) => continue,
             };
 
-        let version_id_array = match get_api_project_result(client.clone(), project_id).await {
+        let mut version_id_array = match get_api_project_result(client.clone(), project_id.as_str().to_string()).await {
             Ok(project_result) => match project_result["versions"].as_array() {
                 Some(versions) => versions.to_vec(),
                 None => continue,
@@ -55,9 +55,11 @@ async fn main() {
             Err(_) => continue,
         };
 
-        let mut api_version_result_option = None;
-        for result in version_id_array {
-            api_version_result_option = match get_api_version_result(client.clone(), &result).await
+        version_id_array.reverse();
+
+        let mut api_version_result_option = None; 
+        for version_id in version_id_array {
+            api_version_result_option = match get_api_version_result(client.clone(), version_id.as_str().unwrap().to_string()).await
             {
                 Ok(version_result) => {
                     if is_compatable(
