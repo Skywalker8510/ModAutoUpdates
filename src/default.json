@@ -1,5 +1,5 @@
 {
     "target_path": "path/to/jar.jar",
-    "server_version": "1.21.1",
-    "loader_version": "fabric"
+    "server_version": "version",
+    "loader_version": "loader"
 }
