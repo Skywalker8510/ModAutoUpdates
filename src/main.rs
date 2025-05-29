@@ -39,7 +39,10 @@ async fn main() {
                         search_result["hits"][0]["versions"].as_array().unwrap(),
                         None,
                     ) {
-                        search_result["hits"][0]["project_id"].as_str().unwrap().to_string()
+                        search_result["hits"][0]["project_id"]
+                            .as_str()
+                            .unwrap()
+                            .to_string()
                     } else {
                         continue; //ToDo add information to console log
                     }
@@ -47,19 +50,24 @@ async fn main() {
                 Err(_) => continue,
             };
 
-        let mut version_id_array = match get_api_project_result(client.clone(), project_id.as_str().to_string()).await {
-            Ok(project_result) => match project_result["versions"].as_array() {
-                Some(versions) => versions.to_vec(),
-                None => continue,
-            },
-            Err(_) => continue,
-        };
+        let mut version_id_array =
+            match get_api_project_result(client.clone(), project_id.as_str().to_string()).await {
+                Ok(project_result) => match project_result["versions"].as_array() {
+                    Some(versions) => versions.to_vec(),
+                    None => continue,
+                },
+                Err(_) => continue,
+            };
 
         version_id_array.reverse();
 
-        let mut api_version_result_option = None; 
+        let mut api_version_result_option = None;
         for version_id in version_id_array {
-            api_version_result_option = match get_api_version_result(client.clone(), version_id.as_str().unwrap().to_string()).await
+            api_version_result_option = match get_api_version_result(
+                client.clone(),
+                version_id.as_str().unwrap().to_string(),
+            )
+            .await
             {
                 Ok(version_result) => {
                     if is_compatable(
@@ -109,7 +117,10 @@ fn is_compatable(
     loader_version_array: Option<&[Value]>,
 ) -> bool {
     match loader_version_array {
-        Some(loader_version_array) => loader_version_array.contains(&loader_version) && game_version_array.contains(&server_version),
+        Some(loader_version_array) => {
+            loader_version_array.contains(&loader_version)
+                && game_version_array.contains(&server_version)
+        }
         None => game_version_array.contains(&server_version),
     }
 }
