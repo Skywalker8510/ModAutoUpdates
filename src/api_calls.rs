@@ -8,7 +8,17 @@ pub async fn get_api_search_result(
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let search_result = client
         .get("https://api.modrinth.com/v2/search")
-        .query(&[("query", fabricmod_id), ("facets", format!("[[\"categories:{}\"],[\"versions:{}\"]]", config["loader_version"].as_str().unwrap(), config["server_version"].as_str().unwrap())), ])
+        .query(&[
+            ("query", fabricmod_id),
+            (
+                "facets",
+                format!(
+                    "[[\"categories:{}\"],[\"versions:{}\"]]",
+                    config["loader_version"].as_str().unwrap(),
+                    config["server_version"].as_str().unwrap()
+                ),
+            ),
+        ])
         .send()
         .await?
         .text()
