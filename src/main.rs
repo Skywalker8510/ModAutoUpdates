@@ -2,17 +2,16 @@ mod api_calls;
 mod config;
 
 use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
+use crate::config::Config;
 use futures_util::StreamExt;
 use reqwest::{Client, get};
 use serde_json::Value;
 use std::fs::{File, read_dir};
 use std::io::Write;
 use std::path::Path;
-use crate::config::Config;
 
 #[tokio::main]
 async fn main() {
-    
     let config = Config::open(&"./settings.toml").expect("Could not open settings file");
     let folder = read_dir(config.target_path.clone()).unwrap();
 
@@ -25,25 +24,31 @@ async fn main() {
 
         let client = Client::new();
 
-        let project_id =
-            match get_api_search_result(client.clone(), fabricmod_id, config.loader_version.clone(), config.server_version.clone()).await {
-                Ok(search_result) => {
-                    if is_compatable(
-                        Value::String(config.loader_version.clone()),
-                        Value::String(config.server_version.clone()),
-                        search_result["hits"][0]["versions"].as_array().unwrap(),
-                        None,
-                    ) {
-                        search_result["hits"][0]["project_id"]
-                            .as_str()
-                            .unwrap()
-                            .to_string()
-                    } else {
-                        continue; //ToDo add information to console log
-                    }
+        let project_id = match get_api_search_result(
+            client.clone(),
+            fabricmod_id,
+            config.loader_version.clone(),
+            config.server_version.clone(),
+        )
+        .await
+        {
+            Ok(search_result) => {
+                if is_compatable(
+                    Value::String(config.loader_version.clone()),
+                    Value::String(config.server_version.clone()),
+                    search_result["hits"][0]["versions"].as_array().unwrap(),
+                    None,
+                ) {
+                    search_result["hits"][0]["project_id"]
+                        .as_str()
+                        .unwrap()
+                        .to_string()
+                } else {
+                    continue; //ToDo add information to console log
                 }
-                Err(_) => continue,
-            };
+            }
+            Err(_) => continue,
+        };
 
         let mut version_id_array =
             match get_api_project_result(client.clone(), project_id.as_str().to_string()).await {

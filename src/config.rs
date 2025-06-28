@@ -1,9 +1,9 @@
+use serde::{Deserialize, Serialize};
 use std::{
     fs::{self, File},
     io::{self, Read, Write},
     path::{Path, PathBuf},
 };
-use serde::{Deserialize, Serialize};
 
 /// A response to the client from the server
 #[derive(Deserialize, Serialize, Debug)]
@@ -16,7 +16,6 @@ pub struct Config {
     pub server_version: String,
 
     /// Is overwiting already uploaded files with the same hash allowed, or is
-
     pub loader_version: String,
 
     #[serde(skip)]

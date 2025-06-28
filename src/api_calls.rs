@@ -13,7 +13,10 @@ pub async fn get_api_search_result(
             ("query", fabricmod_id),
             (
                 "facets",
-                format!("[[\"categories:{}\"],[\"versions:{}\"]]", loader_version, server_version),
+                format!(
+                    "[[\"categories:{}\"],[\"versions:{}\"]]",
+                    loader_version, server_version
+                ),
             ),
         ])
         .send()
