@@ -5,17 +5,16 @@ use std::{
     path::{Path, PathBuf},
 };
 
-/// A response to the client from the server
 #[derive(Deserialize, Serialize, Debug)]
 #[serde(default)]
 pub struct Config {
-    /// Maximum filesize in bytes
+    /// Path to the folder containing the mod jar's
     pub target_path: PathBuf,
 
-    /// Maximum filesize in bytes
+    /// Minecraft Server version as a string
     pub server_version: String,
 
-    /// Is overwiting already uploaded files with the same hash allowed, or is
+    /// Mod Loader that is being used as a string
     pub loader_version: String,
 
     #[serde(skip)]
@@ -59,7 +58,7 @@ impl Config {
         file.write_all(&toml::to_string_pretty(self).unwrap().into_bytes())?;
 
         // Overwrite the original DB with
-        fs::rename(out_path, &self.path).unwrap();
+        fs::rename(out_path, &self.path)?;
 
         Ok(())
     }
