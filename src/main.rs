@@ -104,7 +104,7 @@ async fn main() {
         let download_path = format!("./{}{}", folder_path, filename);
 
         match download_files(download_url, &download_path).await {
-            Ok(_) => println!("file downloaded successfully!"),
+            Ok(_) => println!("file {} downloaded successfully!", filename),
             Err(_) => continue,
         };
     }
