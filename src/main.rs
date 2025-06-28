@@ -1,4 +1,5 @@
 mod api_calls;
+mod config;
 
 use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
 use futures_util::StreamExt;
@@ -7,19 +8,13 @@ use serde_json::Value;
 use std::fs::{File, read_dir};
 use std::io::{Read, Write};
 use std::path::Path;
+use crate::config::Config;
 
 #[tokio::main]
 async fn main() {
-    //TODO Change this to a TOML file instead of using JSON.
-    //**********************************************************************
-    let mut file = File::open("./src/default.json").unwrap();
-    let mut data = String::new();
-    file.read_to_string(&mut data).unwrap();
-
-    let config: Value = serde_json::from_str(&data).unwrap();
-    let folder_path = config["target_path"].as_str().unwrap();
-    let folder = read_dir(folder_path).unwrap();
-    //**********************************************************************
+    
+    let config = Config::open(&"./settings.toml").expect("Could not open settings file");
+    let folder = read_dir(config.target_path.clone()).unwrap();
 
     for file in folder {
         let jar_path = file.unwrap().path();
@@ -31,11 +26,11 @@ async fn main() {
         let client = Client::new();
 
         let project_id =
-            match get_api_search_result(client.clone(), fabricmod_id, config.clone()).await {
+            match get_api_search_result(client.clone(), fabricmod_id, config.loader_version.clone(), config.server_version.clone()).await {
                 Ok(search_result) => {
                     if is_compatable(
-                        config["loader_version"].clone(),
-                        config["server_version"].clone(),
+                        Value::String(config.loader_version.clone()),
+                        Value::String(config.server_version.clone()),
                         search_result["hits"][0]["versions"].as_array().unwrap(),
                         None,
                     ) {
@@ -71,8 +66,8 @@ async fn main() {
             {
                 Ok(version_result) => {
                     if is_compatable(
-                        config["loader_version"].clone(),
-                        config["server_version"].clone(),
+                        Value::String(config.loader_version.clone()),
+                        Value::String(config.server_version.clone()),
                         version_result["game_versions"].as_array().unwrap(),
                         Some(version_result["loaders"].as_array().unwrap()),
                     ) {
@@ -101,7 +96,7 @@ async fn main() {
             None => continue,
         };
 
-        let download_path = format!("./{}{}", folder_path, filename);
+        let download_path = format!("./{}/{}", config.target_path.clone().display(), filename);
 
         match download_files(download_url, &download_path).await {
             Ok(_) => println!("file downloaded successfully!"),
