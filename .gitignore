@@ -3,5 +3,4 @@
 shell.nix
 .direnv/
 .envrc
-src/default.json
 testing_jars/

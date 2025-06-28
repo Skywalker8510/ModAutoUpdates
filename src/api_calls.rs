@@ -4,7 +4,8 @@ use serde_json::Value;
 pub async fn get_api_search_result(
     client: Client,
     fabricmod_id: String,
-    config: Value,
+    loader_version: String,
+    server_version: String,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let search_result = client
         .get("https://api.modrinth.com/v2/search")
@@ -14,8 +15,7 @@ pub async fn get_api_search_result(
                 "facets",
                 format!(
                     "[[\"categories:{}\"],[\"versions:{}\"]]",
-                    config["loader_version"].as_str().unwrap(),
-                    config["server_version"].as_str().unwrap()
+                    loader_version, server_version
                 ),
             ),
         ])
