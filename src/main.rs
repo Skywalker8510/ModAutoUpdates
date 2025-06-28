@@ -6,7 +6,7 @@ use futures_util::StreamExt;
 use reqwest::{Client, get};
 use serde_json::Value;
 use std::fs::{File, read_dir};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::Path;
 use crate::config::Config;
 
