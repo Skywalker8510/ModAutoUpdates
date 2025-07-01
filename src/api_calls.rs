@@ -11,7 +11,11 @@ pub async fn get_api_search_result(
         .get("https://api.modrinth.com/v2/search")
         .query(&[
             ("query", fabricmod_id),
-            ("facets", format!("[[\"categories:{loader_version}\"],[\"versions:{server_version}\"]]"))])
+            (
+                "facets",
+                format!("[[\"categories:{loader_version}\"],[\"versions:{server_version}\"]]"),
+            ),
+        ])
         .send()
         .await?
         .text()

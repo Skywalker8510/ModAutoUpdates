@@ -6,10 +6,10 @@ use crate::config::Config;
 use futures_util::StreamExt;
 use reqwest::{Client, get};
 use serde_json::Value;
+use serde_json::Value::Null;
 use std::fs::{File, read_dir};
 use std::io::Write;
 use std::path::Path;
-use serde_json::Value::Null;
 
 #[tokio::main]
 async fn main() {
@@ -34,7 +34,7 @@ async fn main() {
         .await
         {
             Ok(search_result) => {
-                if  search_result["hits"][0]["versions"] == Null {
+                if search_result["hits"][0]["versions"] == Null {
                     println!("No versions found for fabric project {fabricmod_id}");
                     continue;
                 } else if is_compatable(
@@ -54,24 +54,20 @@ async fn main() {
             Err(_) => continue,
         };
 
-        let mut version_id_array =
-            match get_api_project_result(client.clone(), project_id).await {
-                Ok(project_result) => match project_result["versions"].as_array() {
-                    Some(versions) => versions.to_vec(),
-                    None => continue,
-                },
-                Err(_) => continue,
-            };
+        let mut version_id_array = match get_api_project_result(client.clone(), project_id).await {
+            Ok(project_result) => match project_result["versions"].as_array() {
+                Some(versions) => versions.to_vec(),
+                None => continue,
+            },
+            Err(_) => continue,
+        };
 
         version_id_array.reverse();
 
-        let mut api_version_result:Value = Null;
+        let mut api_version_result: Value = Null;
         for version_id in version_id_array {
-            match get_api_version_result(
-                client.clone(),
-                version_id.as_str().unwrap().to_string(),
-            )
-            .await
+            match get_api_version_result(client.clone(), version_id.as_str().unwrap().to_string())
+                .await
             {
                 Ok(version_result) => {
                     if is_compatable(
@@ -80,8 +76,8 @@ async fn main() {
                         version_result["game_versions"].as_array().unwrap(),
                         Some(version_result["loaders"].as_array().unwrap()),
                     ) {
-                         api_version_result = version_result;
-                        break
+                        api_version_result = version_result;
+                        break;
                     } else {
                         continue;
                     }
@@ -89,7 +85,6 @@ async fn main() {
                 Err(_) => continue,
             };
         }
-
 
         let download_url = match api_version_result["files"][0]["url"].as_str() {
             Some(url) => url,
