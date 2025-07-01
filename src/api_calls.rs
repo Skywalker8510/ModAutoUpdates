@@ -11,14 +11,7 @@ pub async fn get_api_search_result(
         .get("https://api.modrinth.com/v2/search")
         .query(&[
             ("query", fabricmod_id),
-            (
-                "facets",
-                format!(
-                    "[[\"categories:{}\"],[\"versions:{}\"]]",
-                    loader_version, server_version
-                ),
-            ),
-        ])
+            ("facets", format!("[[\"categories:{loader_version}\"],[\"versions:{server_version}\"]]"))])
         .send()
         .await?
         .text()
@@ -33,10 +26,7 @@ pub async fn get_api_project_result(
     project_id: String,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let project_search = client
-        .get(format!(
-            "https://api.modrinth.com/v2/project/{}",
-            project_id
-        ))
+        .get(format!("https://api.modrinth.com/v2/project/{project_id}"))
         .send()
         .await?
         .text()
@@ -51,10 +41,7 @@ pub async fn get_api_version_result(
     version_id: String,
 ) -> Result<Value, Box<dyn std::error::Error>> {
     let version_search = client
-        .get(format!(
-            "https://api.modrinth.com/v2/version/{}",
-            version_id
-        ))
+        .get(format!("https://api.modrinth.com/v2/version/{version_id}"))
         .send()
         .await?
         .text()
