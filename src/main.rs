@@ -9,6 +9,7 @@ use serde_json::Value;
 use std::fs::{File, read_dir};
 use std::io::Write;
 use std::path::Path;
+use serde_json::Value::Null;
 
 #[tokio::main]
 async fn main() {
@@ -26,14 +27,17 @@ async fn main() {
 
         let project_id = match get_api_search_result(
             client.clone(),
-            fabricmod_id,
+            fabricmod_id.clone(),
             config.loader_version.clone(),
             config.server_version.clone(),
         )
         .await
         {
             Ok(search_result) => {
-                if is_compatable(
+                if  search_result["hits"][0]["versions"] == Null {
+                    println!("No versions found for fabric project {fabricmod_id}");
+                    continue;
+                } else if is_compatable(
                     Value::String(config.loader_version.clone()),
                     Value::String(config.server_version.clone()),
                     search_result["hits"][0]["versions"].as_array().unwrap(),
