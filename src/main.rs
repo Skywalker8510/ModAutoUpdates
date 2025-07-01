@@ -18,7 +18,7 @@ async fn main() {
 
     for file in folder {
         let jar_path = file.unwrap().path();
-        let fabricmod_id = match get_fabric_id(jar_path.clone()) {
+        let fabricmod_id = match get_fabric_id(jar_path) {
             Ok(id) => id,
             Err(_) => continue,
         };
@@ -55,7 +55,7 @@ async fn main() {
         };
 
         let mut version_id_array =
-            match get_api_project_result(client.clone(), project_id.as_str().to_string()).await {
+            match get_api_project_result(client.clone(), project_id).await {
                 Ok(project_result) => match project_result["versions"].as_array() {
                     Some(versions) => versions.to_vec(),
                     None => continue,
@@ -65,9 +65,9 @@ async fn main() {
 
         version_id_array.reverse();
 
-        let mut api_version_result_option = None;
+        let mut api_version_result:Value = Null;
         for version_id in version_id_array {
-            api_version_result_option = match get_api_version_result(
+            match get_api_version_result(
                 client.clone(),
                 version_id.as_str().unwrap().to_string(),
             )
@@ -80,20 +80,16 @@ async fn main() {
                         version_result["game_versions"].as_array().unwrap(),
                         Some(version_result["loaders"].as_array().unwrap()),
                     ) {
-                        Option::from(version_result)
+                         api_version_result = version_result;
+                        break
                     } else {
                         continue;
                     }
                 }
                 Err(_) => continue,
             };
-            break;
         }
 
-        let api_version_result = match api_version_result_option {
-            Some(version_result) => version_result,
-            None => continue,
-        };
 
         let download_url = match api_version_result["files"][0]["url"].as_str() {
             Some(url) => url,
