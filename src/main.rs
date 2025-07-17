@@ -8,6 +8,7 @@ use reqwest::{Client, get};
 use serde_json::Value;
 use serde_json::Value::Null;
 use std::fs::{File, read_dir};
+use std::io;
 use std::io::Write;
 use std::path::Path;
 
@@ -43,6 +44,21 @@ async fn main() {
                     search_result["hits"][0]["versions"].as_array().unwrap(),
                     None,
                 ) {
+                    let title = &search_result["hits"][0]["title"];
+                    println!(
+                        "Fabric project {title} found from mod {fabricmod_id} do you want to download it? (Y/N)"
+                    );
+                    let mut input: String = String::new();
+                    io::stdin()
+                        .read_line(&mut input)
+                        .expect("Unable to read Stdin");
+                    if input.trim() == "Y" || input.trim() == "y" {
+                        println!("Continuing with download for {title}");
+                    } else {
+                        println!("Skipping download for {title}");
+                        continue;
+                    }
+
                     search_result["hits"][0]["project_id"]
                         .as_str()
                         .unwrap()
