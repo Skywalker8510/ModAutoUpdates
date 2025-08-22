@@ -7,7 +7,7 @@ use futures_util::StreamExt;
 use reqwest::{get, Client};
 use serde_json::Value;
 use serde_json::Value::Null;
-use std::fs::{copy, read_dir, remove_file, File};
+use std::fs::{copy, create_dir, read_dir, remove_file, File};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -181,7 +181,10 @@ fn copy_dir_all<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<(), Bo
     for file in from.as_ref().read_dir()? {
         let file = file?;
         let file_type = file.file_type()?;
-        if file_type.is_dir() {
+        if file.file_name() == ".backup" {
+            continue
+        } else if file_type.is_dir() {
+            create_dir(to.as_ref().join(file.file_name()))?;
             copy_dir_all(file.path(), to.as_ref().join(file.file_name()))?;
         } else{
             copy(file.path(), to.as_ref().join(file.file_name()))?;
