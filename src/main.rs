@@ -4,10 +4,10 @@ mod config;
 use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
 use crate::config::Config;
 use futures_util::StreamExt;
-use reqwest::{get, Client};
+use reqwest::{Client, get};
 use serde_json::Value;
 use serde_json::Value::Null;
-use std::fs::{copy, create_dir, read_dir, remove_file, File};
+use std::fs::{File, copy, create_dir, read_dir, remove_file};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -119,7 +119,7 @@ async fn main() {
             Ok(_) => {
                 remove_file(jar_path).unwrap();
                 println!("file {filename} downloaded successfully!")
-            },
+            }
             Err(_) => continue,
         };
     }
@@ -177,16 +177,19 @@ fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn copy_dir_all<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<(), Box<dyn std::error::Error>> {
+fn copy_dir_all<P: AsRef<Path>, Q: AsRef<Path>>(
+    from: P,
+    to: Q,
+) -> Result<(), Box<dyn std::error::Error>> {
     for file in from.as_ref().read_dir()? {
         let file = file?;
         let file_type = file.file_type()?;
         if file.file_name() == ".backup" {
-            continue
+            continue;
         } else if file_type.is_dir() {
             create_dir(to.as_ref().join(file.file_name()))?;
             copy_dir_all(file.path(), to.as_ref().join(file.file_name()))?;
-        } else{
+        } else {
             copy(file.path(), to.as_ref().join(file.file_name()))?;
         }
     }
