@@ -5,4 +5,5 @@ shell.nix
 .envrc
 testing_jars/
 settings.toml
-downloads/ 
+downloads/
+/.backup
