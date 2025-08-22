@@ -7,7 +7,7 @@ use futures_util::StreamExt;
 use reqwest::{get, Client};
 use serde_json::Value;
 use serde_json::Value::Null;
-use std::fs::{copy, read_dir, File};
+use std::fs::{copy, read_dir, remove_file, File};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -20,7 +20,7 @@ async fn main() {
 
     for file in folder {
         let jar_path = file.unwrap().path();
-        let fabricmod_id = match get_fabric_id(jar_path) {
+        let fabricmod_id = match get_fabric_id(jar_path.clone()) {
             Ok(id) => id,
             Err(_) => continue,
         };
@@ -116,7 +116,10 @@ async fn main() {
         let download_path = format!("./{}/{}", config.target_path.clone().display(), filename);
 
         match download_files(download_url, &download_path).await {
-            Ok(_) => println!("file {filename} downloaded successfully!"),
+            Ok(_) => {
+                remove_file(jar_path).unwrap();
+                println!("file {filename} downloaded successfully!")
+            },
             Err(_) => continue,
         };
     }
