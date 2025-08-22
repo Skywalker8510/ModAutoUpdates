@@ -17,6 +17,10 @@ pub struct Config {
     /// Mod Loader that is being used as a string
     pub loader_version: String,
 
+    pub backup_mods: bool,
+
+    pub backup_path: PathBuf,
+
     #[serde(skip)]
     path: PathBuf,
 }
@@ -28,6 +32,8 @@ impl Default for Config {
             server_version: String::new(),
             loader_version: String::new(),
             path: "./settings.toml".into(),
+            backup_mods: true,
+            backup_path: Path::new(".backup").into(),
         }
     }
 }
