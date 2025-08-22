@@ -162,7 +162,7 @@ async fn download_files(url: &str, path: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
+fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> { //ToDo make it make subfolders with the date and time ran to have multiple backups.
     if !config.backup_mods {
         return Ok(());
     } else {
