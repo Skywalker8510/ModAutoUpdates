@@ -7,7 +7,7 @@ use futures_util::StreamExt;
 use reqwest::{get, Client};
 use serde_json::Value;
 use serde_json::Value::Null;
-use std::fs::{create_dir_all, read_dir, File};
+use std::fs::{copy, read_dir, File};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -16,6 +16,7 @@ use std::path::Path;
 async fn main() {
     let config = Config::open(&"./settings.toml").expect("Could not open settings file");
     let folder = read_dir(config.target_path.clone()).unwrap();
+    backup_mods(config.clone()).expect("unable to backup");
 
     for file in folder {
         let jar_path = file.unwrap().path();
@@ -155,5 +156,34 @@ async fn download_files(url: &str, path: &str) -> Result<(), Box<dyn std::error:
     }
 
     file.flush()?;
+    Ok(())
+}
+
+fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
+    if !config.backup_mods {
+        return Ok(());
+    } else {
+        let from = config.target_path;
+        let to = config.backup_path;
+        if !to.exists() {
+            std::fs::create_dir_all(&to)?;
+        }
+        copy_dir_all(from, to)?;
+    }
+
+    Ok(())
+}
+
+fn copy_dir_all<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<(), Box<dyn std::error::Error>> {
+    for file in from.as_ref().read_dir()? {
+        let file = file?;
+        let file_type = file.file_type()?;
+        if file_type.is_dir() {
+            copy_dir_all(file.path(), to.as_ref().join(file.file_name()))?;
+        } else{
+            copy(file.path(), to.as_ref().join(file.file_name()))?;
+        }
+    }
+
     Ok(())
 }
