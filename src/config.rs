@@ -21,6 +21,8 @@ pub struct Config {
 
     pub backup_path: PathBuf,
 
+    pub backup_subfolders: bool,
+
     #[serde(skip)]
     path: PathBuf,
 }
@@ -34,6 +36,7 @@ impl Default for Config {
             path: "./settings.toml".into(),
             backup_mods: true,
             backup_path: Path::new(".backup").into(),
+            backup_subfolders: true,
         }
     }
 }

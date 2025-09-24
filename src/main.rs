@@ -3,6 +3,7 @@ mod config;
 
 use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_version_result};
 use crate::config::Config;
+use chrono::{DateTime, Local};
 use futures_util::StreamExt;
 use reqwest::{get, Client};
 use serde_json::Value;
@@ -162,13 +163,25 @@ async fn download_files(url: &str, path: &str) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 
-fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> { //ToDo make it make subfolders with the date and time ran to have multiple backups.
+fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     if !config.backup_mods {
         return Ok(());
     } else {
         let from = config.target_path;
-        let to = config.backup_path;
+        let mut to = config.backup_path;
         if !to.exists() {
+            std::fs::create_dir_all(&to)?;
+        }
+        if config.backup_subfolders {
+            let system_time = std::time::SystemTime::now();
+            let datetime: DateTime<Local> = system_time.into();
+            let date = format!("{}", datetime.format("%m_%d_%y"));
+            let time = format!("{}", datetime.format("%H:%M:%S"));
+            to = to.join(&date);
+            if !to.exists() {
+                std::fs::create_dir_all(&to)?;
+            }
+            to = to.join(&time);
             std::fs::create_dir_all(&to)?;
         }
         copy_dir_all(from, to)?;
