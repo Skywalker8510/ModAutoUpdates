@@ -32,6 +32,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            //ToDo add config version so that config can be overwritten if config has been updated
             target_path: Path::new(".").into(),
             server_version: String::new(),
             loader_version: String::new(),
