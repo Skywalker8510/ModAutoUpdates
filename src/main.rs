@@ -193,6 +193,7 @@ fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
 //ToDo this function needs more thinking before i can properly implement it.
 //     Might need a rework of the backup system a little.
 #[allow(dead_code)]
+#[allow(unused)]
 fn delete_old_backups(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     if (!config.backup_subfolders) {
         return Ok(());
