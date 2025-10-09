@@ -23,6 +23,8 @@ pub struct Config {
 
     pub backup_subfolders: bool,
 
+    pub days_backed_up: i16,
+
     #[serde(skip)]
     path: PathBuf,
 }
@@ -37,6 +39,7 @@ impl Default for Config {
             backup_mods: true,
             backup_path: Path::new(".backup").into(),
             backup_subfolders: true,
+            days_backed_up: 7,
         }
     }
 }
