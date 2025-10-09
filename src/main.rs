@@ -190,6 +190,22 @@ fn backup_mods(config: Config) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+//ToDo this function needs more thinking before i can properly implement it.
+//     Might need a rework of the backup system a little.
+#[allow(dead_code)]
+fn delete_old_backups(config: Config) -> Result<(), Box<dyn std::error::Error>> {
+    if (!config.backup_subfolders) {
+        return Ok(());
+    }
+    let folder = config.backup_path;
+    let system_time = std::time::SystemTime::now();
+    let datetime: DateTime<Local> = system_time.into();
+    for folder in &folder {
+    }
+
+    Ok(())
+}
+
 fn copy_dir_all<P: AsRef<Path>, Q: AsRef<Path>>(
     from: P,
     to: Q,
