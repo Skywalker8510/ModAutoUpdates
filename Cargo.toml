@@ -12,6 +12,3 @@ tokio = { version = "1.47.1", features = ["full"] }
 zip = "4.5.0"
 toml = "0.9.5"
 chrono = "0.4.42"
-
-[env]
-Config-version = "V1"

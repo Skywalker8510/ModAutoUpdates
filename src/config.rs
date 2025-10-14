@@ -8,8 +8,6 @@ use std::{
 #[derive(Deserialize, Serialize, Debug, Clone)]
 #[serde(default)]
 pub struct Config {
-    pub config_version: String,
-
     /// Path to the folder containing the mod jar's
     pub target_path: PathBuf,
 
@@ -34,7 +32,6 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            config_version: std::env::var("Config-version").expect("Something went very wrong because why doesnt a config version exist"),
             target_path: Path::new(".").into(),
             server_version: String::new(),
             loader_version: String::new(),
@@ -63,6 +60,7 @@ impl Config {
 
         let mut parsed_config: Self = toml::from_str(&input_str).unwrap();
         parsed_config.path = path.as_ref().to_path_buf();
+        parsed_config.save()?;
 
         Ok(parsed_config)
     }
