@@ -5,10 +5,10 @@ use crate::api_calls::{get_api_project_result, get_api_search_result, get_api_ve
 use crate::config::Config;
 use chrono::{DateTime, Local};
 use futures_util::StreamExt;
-use reqwest::{get, Client};
+use reqwest::{Client, get};
 use serde_json::Value;
 use serde_json::Value::Null;
-use std::fs::{copy, create_dir, read_dir, remove_file, File};
+use std::fs::{File, copy, create_dir, read_dir, remove_file};
 use std::io;
 use std::io::Write;
 use std::path::Path;
@@ -201,8 +201,7 @@ fn delete_old_backups(config: Config) -> Result<(), Box<dyn std::error::Error>> 
     let folder = config.backup_path;
     let system_time = std::time::SystemTime::now();
     let datetime: DateTime<Local> = system_time.into();
-    for folder in &folder {
-    }
+    for folder in &folder {}
 
     Ok(())
 }
