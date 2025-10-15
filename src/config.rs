@@ -59,8 +59,11 @@ impl Config {
         }
 
         let mut parsed_config: Self = toml::from_str(&input_str).unwrap();
+
+        if input_str.as_str() != toml::to_string_pretty(&parsed_config.clone()).unwrap() {
+            parsed_config.save()?;
+        }
         parsed_config.path = path.as_ref().to_path_buf();
-        parsed_config.save()?;
 
         Ok(parsed_config)
     }
