@@ -25,7 +25,7 @@ jobs:
           # Artifact name
           name: ModAutoUpdates
           # A file, directory or wildcard pattern that describes what to upload
-          path: /target/debug/ModAutoUpdates
+          path: /home/runner/work/ModAutoUpdates/ModAutoUpdates/target/debug/ModAutoUpdates
           if-no-files-found: error
           # If true, an artifact with a matching name will be deleted before a new one is uploaded. If false, the action will fail if an artifact for the given name already exists. Does not fail if the artifact does not exist.
           overwrite: true
